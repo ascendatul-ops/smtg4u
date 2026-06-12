@@ -1,0 +1,844 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Apu ✨ (System Core v3.0)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Outfit:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #fff5f5;
+            --panel: #ffffff;
+            --accent: #ffb3ba;
+            --text: #5e4b4b;
+            --text-light: #a39393;
+            --bubble-pop: #ffe0e3;
+            --bar-color: #ff6b6b;
+            --neon-glow: rgba(255, 179, 186, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- Background Animations --- */
+        @keyframes floatPetal {
+            0% { transform: translateY(-10vh) translateX(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(110vh) translateX(100px) rotate(360deg); opacity: 0; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 20px var(--neon-glow); }
+            50% { transform: scale(1.05); box-shadow: 0 0 35px rgba(255, 107, 107, 0.8); }
+        }
+
+        @keyframes microShake {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(1px, -1px); }
+            75% { transform: translate(-1px, 1px); }
+        }
+
+        @keyframes scanline {
+            0% { top: 0%; }
+            50% { top: 100%; }
+            100% { top: 0%; }
+        }
+
+        @keyframes glitchFlash {
+            0%, 100% { background: rgba(255, 107, 107, 0.95); }
+            50% { background: rgba(35, 31, 31, 0.98); }
+        }
+
+        .petals {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .petal {
+            position: absolute;
+            background: var(--accent);
+            border-radius: 15px 0 15px 15px;
+            animation: floatPetal 8s linear infinite;
+            opacity: 0;
+        }
+
+        /* --- Main UI Card --- */
+        .app-card {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            max-width: 460px;
+            width: 100%;
+            padding: 40px 30px;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(255, 179, 186, 0.3);
+            text-align: center;
+            z-index: 10;
+            animation: fadeIn 1s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            position: relative;
+        }
+
+        .profile-section {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .avatar-glow {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #ffccd5, #ffb3ba);
+            border-radius: 50%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            animation: pulse 3s infinite;
+        }
+
+        h1 {
+            font-family: 'Caveat', cursive;
+            font-size: 3.2rem;
+            color: #d66874;
+            margin-top: 15px;
+        }
+
+        /* --- Audio Controls --- */
+        .audio-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+        .audio-toggle.muted {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+
+        /* --- Thermometer Core --- */
+        .thermometer-box {
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.02);
+        }
+
+        .thermometer-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-dark);
+        }
+
+        .thermometer-bar-bg {
+            background: #e0e0e0;
+            height: 12px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .thermometer-fill {
+            background: linear-gradient(90deg, #ffb3ba, var(--bar-color));
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.4s;
+        }
+
+        /* --- De-Escalation Terminal --- */
+        .terminal-box {
+            background: #231f1f;
+            color: #ffb3ba;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            padding: 10px 14px;
+            border-radius: 12px;
+            text-align: left;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+            border-left: 3px solid var(--bar-color);
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* --- Apology Narrative Layout --- */
+        .msg-bubble {
+            background: var(--panel);
+            padding: 22px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            text-align: left;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            margin-bottom: 25px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .msg-bubble p {
+            margin-bottom: 12px;
+        }
+        .msg-bubble p:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .letter-regards {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(94, 75, 75, 0.1);
+            font-family: 'Caveat', cursive;
+            font-size: 1.4rem;
+            color: #d66874;
+            text-align: right;
+        }
+
+        .feature-title {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 25px 0 10px 0;
+        }
+
+        /* --- Bubble Wrap --- */
+        .bubble-wrap {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 16px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .bubble {
+            aspect-ratio: 1;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: inset 0 -4px 8px rgba(0,0,0,0.12), 0 4px 6px rgba(255, 179, 186, 0.4);
+            transition: transform 0.1s;
+            animation: microShake 3s infinite alternate;
+        }
+
+        .bubble:active { transform: scale(0.88); }
+
+        .bubble.popped {
+            background: var(--bubble-pop);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            pointer-events: none;
+            position: relative;
+            animation: none;
+        }
+
+        .bubble.popped::after {
+            content: '✨';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8rem;
+        }
+
+        /* --- Treats Container --- */
+        .offering-container {
+            display: flex;
+            justify-content: space-around;
+            background: var(--panel);
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .offering-item {
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 10px;
+            border-radius: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .offering-item:hover { transform: scale(1.2) translateY(-4px); }
+
+        .offering-container.scanning::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(214, 104, 116, 0.4);
+            box-shadow: 0 0 8px #d66874;
+            animation: scanline 1.5s linear infinite;
+            z-index: 1;
+        }
+
+        .offering-item.selected {
+            background: #fff0f1;
+            transform: scale(1.15);
+            box-shadow: 0 0 0 2px #ffb3ba, 0 4px 12px rgba(255, 179, 186, 0.5);
+        }
+
+        .offering-container.has-selection .offering-item:not(.selected) {
+            opacity: 0.4;
+            transform: scale(0.9);
+        }
+
+        /* --- Choice Area Base Layout --- */
+        .choice-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-top: 25px;
+            padding-bottom: 90px;
+        }
+
+        .btn {
+            background: var(--panel);
+            color: var(--text);
+            border: 2px solid var(--accent);
+            padding: 14px;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 8px 15px rgba(255, 179, 186, 0.4);
+        }
+
+        /* --- ABSOLUTE CONSTANT DIMENSION LOCK SYSTEM --- */
+        #runBtn, #runBtn:hover, #runBtn:active, #runBtn:focus {
+            position: absolute !important;
+            bottom: 40px !important;
+            
+            /* Rigid pixel boundary assignment overrides all active touch states */
+            width: 250px !important;
+            max-width: 250px !important;
+            min-width: 250px !important;
+            height: 48px !important;
+            max-height: 48px !important;
+            min-height: 48px !important;
+            
+            /* Freeze structural layout parameters */
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            display: inline-flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            box-sizing: border-box !important;
+            
+            z-index: 200 !important;
+            padding: 0px 10px !important;
+            font-size: 0.88rem !important;
+            
+            /* Handle repositioning smoothly without scale stutter */
+            transition: left 0.1s cubic-bezier(0.19, 1, 0.22, 1), 
+                        top 0.1s cubic-bezier(0.19, 1, 0.22, 1), 
+                        background 0.3s, color 0.3s, box-shadow 0.3s !important;
+        }
+
+        /* --- Smart Receipt Screen --- */
+        .hidden-gift {
+            display: none;
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        .humble-msg {
+            background: #ffffff;
+            border-left: 4px solid #10b981;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            text-align: left;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            color: var(--text);
+        }
+
+        .receipt-card {
+            background: #fff;
+            border: 1px dashed #d66874;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.01);
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 4px;
+            border-bottom: 1px rgba(0,0,0,0.04) solid;
+        }
+
+        .hidden-gift h2 {
+            font-family: 'Caveat', cursive;
+            font-size: 2.6rem;
+            color: #d66874;
+            margin-bottom: 10px;
+        }
+
+        .sparkle-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        /* --- Anti-Cheat Firewall --- */
+        .firewall-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(255, 107, 107, 0.95);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            flex-direction: column;
+            font-family: 'Share Tech Mono', monospace;
+            animation: glitchFlash 0.2s infinite;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .firewall-overlay h2 { font-size: 2rem; margin-bottom: 10px; }
+    </style></head><body>
+
+    <div class="firewall-overlay" id="firewall">
+        <h2>[SECURITY BREACH DETECTED]</h2>
+        <p>Neural bypass attempts prohibited. Protocol overridden by Atul.</p>
+        <p style="margin-top: 15px; font-size: 0.8rem; color: #ffe0e3;">Page auto-unlocking in 2s...</p>
+    </div>
+
+    <div class="petals" id="petalContainer"></div>
+
+    <div class="app-card" id="mainCard">
+        <button class="audio-toggle" id="audioToggle" onclick="toggleMute()">🔊 Audio: ON</button>
+        
+        <div class="profile-section">
+            <div class="avatar-glow">👑</div>
+            <h1>Dear Apu</h1>
+        </div>
+        
+        <div id="interactiveContent">
+            <div class="thermometer-box">
+                <div class="thermometer-header">
+                    <span id="moodLabel">Current Mood: Mega Furious 😡</span>
+                    <span id="percentageLabel">100% Mad</span>
+                </div>
+                <div class="thermometer-bar-bg">
+                    <div class="thermometer-fill" id="thermoFill"></div>
+                </div>
+            </div>
+
+            <div class="terminal-box" id="systemLog">
+                [SYSTEM]: Emotional friction critical. Subroutines waiting...
+            </div>
+
+            <div class="msg-bubble">
+                <p><strong>I messed up. badly.</strong></p>
+                <p>When you asked for space, I wanted to respect it. But when I found out about your grandfather later on, I froze. I hesitated to text because I overthought the timing, and I wasn't there when you actually needed a friend.</p>
+                <p>I know you're mad, and you have every right to be. I am so, so sorry for letting you down. 🤍</p>
+                <div class="letter-regards">Regards,<br>Your bestfriend Atul</div>
+            </div>
+
+            <div class="feature-title">Pop bubbles to reduce the anger meter 👇</div>
+            <div class="bubble-wrap" id="wrapGrid">
+                <div class="bubble" onclick="popBubble(this)"></div>
+                <div class="bubble" onclick="popBubble(this)"></div>
+                <div class="bubble" onclick="popBubble(this)"></div>
+                <div class="bubble" onclick="popBubble(this)"></div>
+            </div>
+
+            <div class="feature-title">Choose a peace offering 🍰</div>
+            <div class="offering-container" id="treatBox">
+                <div class="offering-item" onclick="selectOffering(this, 'Boba Tea 🧋')">🧋</div>
+                <div class="offering-item" onclick="selectOffering(this, 'Ice Cream 🍦')">🍦</div>
+                <div class="offering-item" onclick="selectOffering(this, 'Cake 🍰')">🍰</div>
+                <div class="offering-item" onclick="selectOffering(this, 'Fries 🍟')">🍟</div>
+            </div>
+
+            <div class="choice-container">
+                <button class="btn" onclick="forgive()">I forgive you, dummy.</button>
+                <button class="btn" id="runBtn" 
+                        onmousemove="slideAway(event)" 
+                        onmouseenter="slideAway(event)"
+                        ontouchstart="slideAway(event)" 
+                        onclick="slideAway(event)">Still mad, I'll not forgive you 😤</button>
+            </div>
+        </div>
+
+        <div class="hidden-gift" id="successScreen">
+            <span class="sparkle-icon">🌸</span>
+            <h2>Thank you, Apu.</h2>
+            
+            <div class="humble-msg">
+                <p>Thank you so much for your grace. Your friendship means a lot to me, and I hate knowing I caused you any extra stress when things were already heavy.</p>
+                <p style="margin-top: 10px;">I'm truly grateful for your forgiveness. I promise to be a more thoughtful, attentive friend moving forward. Whenever you're ready to catch up or talk, I am right here. 🤍</p>
+                <div class="letter-regards" style="border: none; padding: 0; margin-top: 10px;">Atul</div>
+            </div>
+            
+            <div class="receipt-card">
+                <div style="text-align: center; margin-bottom: 10px; font-weight: bold; color: #d66874;">--- TREATY RECEIPT ---</div>
+                <div class="receipt-row"><span>TREATY ID:</span><span id="receiptId">#APU-0000</span></div>
+                <div class="receipt-row"><span>TIMESTAMP:</span><span id="receiptTime">2026-06-12</span></div>
+                <div class="receipt-row"><span>PARTIES:</span><span>ATUL -> APU</span></div>
+                <div class="receipt-row"><span>OUTCOME:</span><span>FORGIVEN 🤍</span></div>
+                <div class="receipt-row" style="border: none; margin-top: 10px; font-weight: bold;">
+                    <span>LIABILITY DUE:</span><span id="receiptBribe" style="color: #d66874;">1x Free Session</span>
+                </div>
+            </div>
+            <button class="btn" onclick="window.print()">Print / Save Receipt 🧾</button>
+        </div>
+    </div>
+
+    <script>
+        let chosenBribe = "";
+        let currentMadness = 100;
+        let isMuted = false;
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSynthTone(freq, type, duration) {
+            if (isMuted) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        function playOuchSound() {
+            if (isMuted) return;
+            try {
+                let now = audioCtx.currentTime;
+                let osc1 = audioCtx.createOscillator();
+                let gain1 = audioCtx.createGain();
+                osc1.type = 'triangle';
+                osc1.frequency.setValueAtTime(280, now);
+                osc1.frequency.exponentialRampToValueAtTime(120, now + 0.12);
+                gain1.gain.setValueAtTime(0.15, now);
+                gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                osc1.connect(gain1); gain1.connect(audioCtx.destination);
+                osc1.start(now); osc1.stop(now + 0.12);
+
+                let osc2 = audioCtx.createOscillator();
+                let gain2 = audioCtx.createGain();
+                osc2.type = 'triangle';
+                osc2.frequency.setValueAtTime(310, now + 0.14);
+                osc2.frequency.exponentialRampToValueAtTime(130, now + 0.26);
+                gain2.gain.setValueAtTime(0.15, now + 0.14);
+                gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.26);
+                osc2.connect(gain2); gain2.connect(audioCtx.destination);
+                osc2.start(now + 0.14); osc2.stop(now + 0.26);
+            } catch(e) {}
+        }
+
+        function playLaserZap() {
+            if (isMuted) return;
+            try {
+                let now = audioCtx.currentTime;
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(850, now);
+                osc.frequency.exponentialRampToValueAtTime(150, now + 0.15);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.linearRampToValueAtTime(0.001, now + 0.15);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(now); osc.stop(now + 0.15);
+            } catch(e) {}
+        }
+
+        function playHeavyBuzz() {
+            if (isMuted) return;
+            try {
+                let now = audioCtx.currentTime;
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(75, now);
+                osc.frequency.linearRampToValueAtTime(70, now + 0.4);
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(now); osc.stop(now + 0.4);
+            } catch(e) {}
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            const btn = document.getElementById('audioToggle');
+            if (isMuted) {
+                btn.innerText = "🔇 Audio: OFF";
+                btn.classList.add('muted');
+            } else {
+                btn.innerText = "🔊 Audio: ON";
+                btn.classList.remove('muted');
+            }
+        }
+
+        const container = document.getElementById('petalContainer');
+        const petalCount = 15;
+        for (let i = 0; i < petalCount; i++) {
+            const petal = document.createElement('div');
+            petal.classList.add('petal');
+            const size = Math.random() * 15 + 10;
+            petal.style.width = `${size}px`;
+            petal.style.height = `${size}px`;
+            petal.style.left = `${Math.random() * 100}%`;
+            petal.style.animationDelay = `${Math.random() * 8}s`;
+            petal.style.animationDuration = `${Math.random() * 5 + 5}s`;
+            container.appendChild(petal);
+        }
+
+        const logs = {
+            100: "[FATAL]: High emotional payload detected. Parsing parameters...",
+            85: "[WARNING]: Discomfort mitigation cycle initiated. Bubble popped.",
+            70: "[SYSTEM]: Recalibrating logic matrix... Anger threshold dropping.",
+            55: "[OPTIMIZING]: Cortisol simulation indexes settling. Approaching baseline.",
+            40: "[STATUS]: Subversive structures clearing. Ego processing apology data.",
+            25: "[ALERT]: Threat evaluation minimal. Softness protocols processing...",
+            10: "[ONLINE]: Strategic dominance acknowledged. Ready for core handshake.",
+            0: "[SUCCESS]: Sovereign rule declared. All systems fully submissive to the Queen."
+        };
+
+        function updateSystemLog() {
+            const logBox = document.getElementById('systemLog');
+            const keys = Object.keys(logs).map(Number).sort((a,b)=>b-a);
+            for (let k of keys) {
+                if (currentMadness >= k) {
+                    logBox.innerText = logs[k];
+                    break;
+                }
+            }
+        }
+
+        function popBubble(element) {
+            element.classList.add('popped');
+            playSynthTone(600, 'sine', 0.15);
+            
+            if (currentMadness > 15) {
+                currentMadness -= 15;
+            } else {
+                currentMadness = 0;
+            }
+            
+            const fill = document.getElementById('thermoFill');
+            const moodLabel = document.getElementById('moodLabel');
+            const percentLabel = document.getElementById('percentageLabel');
+            
+            fill.style.width = `${currentMadness}%`;
+            percentLabel.innerText = `${currentMadness}% Mad`;
+            
+            if (currentMadness <= 0) {
+                moodLabel.innerText = "Current Mood: Calm & Dictatorial 👑";
+                fill.style.background = "#10b981";
+            } else if (currentMadness <= 40) {
+                moodLabel.innerText = "Current Mood: Slightly Pissed 🤨";
+                document.documentElement.style.setProperty('--bar-color', '#ffa8a8');
+            } else if (currentMadness <= 75) {
+                moodLabel.innerText = "Current Mood: Annoyed 😒";
+            }
+
+            updateSystemLog();
+
+            setTimeout(() => {
+                element.classList.remove('popped');
+                element.style.animationDelay = `${Math.random() * 2}s`;
+            }, 1500);
+        }
+
+        function selectOffering(element, name) {
+            const box = document.getElementById('treatBox');
+            const items = document.querySelectorAll('.offering-item');
+            
+            playSynthTone(880, 'triangle', 0.2);
+            box.classList.add('scanning');
+            
+            setTimeout(() => {
+                box.classList.remove('scanning');
+                items.forEach(item => item.classList.remove('selected'));
+                element.classList.add('selected');
+                box.classList.add('has-selection');
+                chosenBribe = name;
+            }, 400);
+        }
+
+        function forgive() {
+            document.getElementById('interactiveContent').style.display = 'none';
+            document.getElementById('successScreen').style.display = 'block';
+            playSynthTone(523.25, 'sine', 0.3);
+            setTimeout(() => playSynthTone(659.25, 'sine', 0.3), 100);
+            setTimeout(() => playSynthTone(783.99, 'sine', 0.4), 200);
+
+            const randId = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('receiptId').innerText = `#APU-${randId}-TRTY`;
+            
+            const now = new Date();
+            document.getElementById('receiptTime').innerText = now.toLocaleString();
+            
+            const bribeLabel = document.getElementById('receiptBribe');
+            if(chosenBribe !== "") {
+                bribeLabel.innerText = `1x ${chosenBribe} Date (Atul's Expense)`;
+            } else {
+                bribeLabel.innerText = "1x Treating Session (Your Choice)";
+            }
+        }
+
+        // ABSOLUTELY LOCKED DIMENSION EVASIVE SLIDE ENGINE
+        function slideAway(e) {
+            if (e) e.preventDefault();
+            
+            const btn = document.getElementById('runBtn');
+            const card = document.getElementById('mainCard');
+            
+            if (Math.random() > 0.4) {
+                playOuchSound();
+            } else {
+                playLaserZap();
+            }
+
+            // Strictly matches the updated 250px x 48px size configurations
+            const btnWidth = 250; 
+            const btnHeight = 48;
+            const cardWidth = card.clientWidth;
+            const cardHeight = card.clientHeight;
+            const cardRect = card.getBoundingClientRect();
+
+            let pointerX, pointerY;
+            if (e && e.touches && e.touches.length > 0) {
+                pointerX = e.touches[0].clientX - cardRect.left;
+                pointerY = e.touches[0].clientY - cardRect.top;
+            } else if (e && (e.clientX !== undefined)) {
+                pointerX = e.clientX - cardRect.left;
+                pointerY = e.clientY - cardRect.top;
+            } else {
+                pointerX = cardWidth / 2;
+                pointerY = cardHeight / 2;
+            }
+
+            const edgeBuffer = 24; 
+            const minX = edgeBuffer;
+            const maxX = cardWidth - btnWidth - edgeBuffer;
+            
+            const minY = 100; 
+            const maxY = cardHeight - btnHeight - edgeBuffer;
+
+            btn.style.position = 'absolute';
+            btn.style.transform = 'none';
+
+            let currentLeft = parseFloat(btn.style.left) || (cardWidth / 2 - btnWidth / 2);
+            let currentTop = parseFloat(btn.style.top) || (cardHeight - btnHeight - 40);
+
+            let testX, testY;
+            let bestX = currentLeft;
+            let bestY = currentTop;
+            let maxDistanceToPointer = -1;
+            let attempts = 0;
+
+            while (attempts < 70) {
+                testX = Math.random() * (maxX - minX) + minX;
+                testY = Math.random() * (maxY - minY) + minY;
+                
+                let distToPointer = Math.sqrt(Math.pow(testX + btnWidth/2 - pointerX, 2) + Math.pow(testY + btnHeight/2 - pointerY, 2));
+                let distToOldSelf = Math.sqrt(Math.pow(testX - currentLeft, 2) + Math.pow(testY - currentTop, 2));
+
+                if (distToPointer > maxDistanceToPointer && distToOldSelf > 110) {
+                    maxDistanceToPointer = distToPointer;
+                    bestX = testX;
+                    bestY = testY;
+                }
+                attempts++;
+            }
+            
+            btn.style.left = `${bestX}px`;
+            btn.style.top = `${bestY}px`;
+            
+            // NOTE: Removed phrases string modification completely to block text-resize updates mid-flight.
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab' || e.key === 'ContextMenu') {
+                e.preventDefault();
+                const firewall = document.getElementById('firewall');
+                firewall.style.display = 'flex';
+                playHeavyBuzz();
+                
+                setTimeout(() => {
+                    firewall.style.display = 'none';
+                }, 200);
+            }
+        });
+    </script></body></html>
